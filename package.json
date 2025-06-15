@@ -3,12 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://danielglopina.github.io/react_shop_project",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "homepage": "https://danielglopina.github.io/react_shop_project"
   },
   "dependencies": {
     "normalize.css": "^8.0.1",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@svgr/rollup": "^8.1.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",

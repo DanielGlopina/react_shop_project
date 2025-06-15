@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import Logo from "./assets/logo.svg";
+import OpenModalIcon from "./assets/open-modal.svg";
+import CloseModalIcon from "./assets/close-modal.svg";
+import Search from "./assets/search.svg";
+import ShoppingCart from "./assets/shopping-cart.svg";
 
 function App() {
   const [productData, setProductData] = useState([]);
@@ -7,7 +12,7 @@ function App() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch("./database-response.json");
+        const response = await fetch("./public/database-response.json");
         if (!response.ok) {
           throw new Error(`HTTP error: ${response.status}`);
         }
@@ -31,6 +36,7 @@ function App() {
   if (error) {
     return <div className="error">{error}</div>;
   }
+  //Events interracting
 
   const [isNavOpen, setState] = useState(false);
   const [sizeFilter, setSize] = useState("Any");
@@ -80,6 +86,8 @@ function App() {
           setProduct={setProduct}
           searchFunc={searchFunc}
           nameFilter={nameFilter}
+          isOpen={isOpen}
+          setModalState={setModalState}
         />
         <BottomNav />
         <Footer />
@@ -93,7 +101,7 @@ function Header({ isNavOpen, setState }) {
     <header>
       <div className="container">
         <div className="header-content">
-          <img src="/icons/logo.svg" alt="logo" />
+          <img src={Logo} alt="logo" />
           <h1>Runway Store</h1>
           <h2>®</h2>
         </div>
@@ -105,7 +113,7 @@ function Header({ isNavOpen, setState }) {
       >
         Filters
         <img
-          src={isNavOpen ? "/icons/close-modal.svg" : "/icons/open-modal.svg"}
+          src={isNavOpen ? CloseModalIcon : OpenModalIcon}
           alt="open modal button"
         />
       </button>
@@ -115,7 +123,6 @@ function Header({ isNavOpen, setState }) {
 
 function Nav({
   isNavOpen,
-  setState,
   setSize,
   setBrand,
   setGender,
@@ -124,7 +131,6 @@ function Nav({
   isOpen,
   setModalState,
   chosenProducts,
-  setProduct,
 }) {
   return (
     <nav className={isNavOpen ? "" : "hiden"}>
@@ -176,12 +182,12 @@ function Nav({
             <label>In Stock:</label>
             <input
               type="checkbox"
-              onClick={() => setStockFilter(!stockFilter)}
+              onClick={() => setStockFilter(stockFilter ? false : true)}
             />
           </div>
 
-          <button onClick={() => setModalState(!isOpen)}>
-            <img src="/icons/shopping-cart.svg" alt="" />
+          <button onClick={() => setModalState(isOpen ? false : true)}>
+            <img src={ShoppingCart} alt="shopping cart" />
             <h5>{chosenProducts.length}</h5>
           </button>
         </div>
@@ -220,14 +226,14 @@ function Modal({ isOpen, setModalState, chosenProducts, setProduct }) {
         <h2>Shopping Cart</h2>
         <button
           type="button"
-          onClick={() => setModalState(false)}
+          onClick={() => setModalState(isOpen ? false : true)}
           className="close-modal"
         >
           x
         </button>
       </div>
       {chosenProducts.map((product) => (
-        <div className="selected-product" key={product.name}>
+        <div className="selected-product">
           <img src={product.image_url} alt={product.image_url} />
           <div className="general-abt">
             <h3>{product.name}</h3>
@@ -249,7 +255,13 @@ function Modal({ isOpen, setModalState, chosenProducts, setProduct }) {
               -
             </button>
             <h3>{product.quantity}</h3>
-            <button onClick={() => addQuantity(product)}>+</button>
+            <button
+              onClick={() => {
+                addQuantity(product);
+              }}
+            >
+              +
+            </button>
           </div>
         </div>
       ))}
@@ -270,7 +282,7 @@ function SearchProduct({ setValue, searchFunc }) {
             onChange={(event) => setValue(event.target.value)}
           />
           <button type="button" onClick={searchFunc}>
-            <img src="/icons/search.svg" alt="search icon" />
+            <img src={Search} alt="search icon" />
           </button>
         </div>
       </div>
@@ -287,9 +299,10 @@ function ProductCards({
   chosenProducts,
   setProduct,
   nameFilter,
+  setModalState,
 }) {
   const filteredProducts = productData.filter((product) => {
-    const stockMatch = !stockFilter || product.in_stock;
+    const stockMatch = !stockFilter || (product.in_stock && stockFilter);
     const sizeMatch =
       sizeFilter === "Any" || product.sizes.includes(Number(sizeFilter));
     const brandMatch =
@@ -326,10 +339,12 @@ function ProductCards({
                 <button
                   className={!product.in_stock ? "not-allowed" : ""}
                   onClick={() => {
+                    if (product.in_stock) setModalState(true);
+
                     if (
-                      !chosenProducts.some(
+                      chosenProducts.filter(
                         (item) => item.name === product.name
-                      ) &&
+                      ).length < 1 &&
                       product.in_stock
                     )
                       setProduct([
